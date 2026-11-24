@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal Copilot IA -->
+    <menuitem
+        id="menu_copilot_root"
+        name="Copilot IA"
+        sequence="100"
+        web_icon="odoo_copilot,static/description/icon.png"
+    />
+
+    <!-- Sous-menu : Journal des actions -->
+    <menuitem
+        id="menu_copilot_action_log"
+        name="Journal des actions"
+        parent="menu_copilot_root"
+        action="action_ai_action_log"
+        sequence="10"
+    />
+
+    <!-- Sous-menu : Configuration -->
+    <menuitem
+        id="menu_copilot_config"
+        name="Configuration"
+        parent="menu_copilot_root"
+        action="action_ai_config"
+        sequence="20"
+    />
+</odoo>

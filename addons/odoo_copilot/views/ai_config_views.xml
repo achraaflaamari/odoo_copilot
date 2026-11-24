@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue liste de la configuration IA -->
+    <record id="view_ai_config_list" model="ir.ui.view">
+        <field name="name">ai.config.list</field>
+        <field name="model">ai.config</field>
+        <field name="arch" type="xml">
+            <list string="Configurations IA">
+                <field name="name" string="Nom"/>
+                <field name="service_url" string="URL du microservice"/>
+                <field name="active" string="Actif"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue formulaire de la configuration IA -->
+    <record id="view_ai_config_form" model="ir.ui.view">
+        <field name="name">ai.config.form</field>
+        <field name="model">ai.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuration du microservice IA">
+                <sheet>
+                    <group>
+                        <group string="Connexion au microservice">
+                            <field name="name" string="Nom"/>
+                            <field name="service_url" string="URL du microservice"/>
+                            <field name="service_api_key" string="Clé API" password="True"/>
+                            <field name="active" string="Actif"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action fenêtre pour la configuration -->
+    <record id="action_ai_config" model="ir.actions.act_window">
+        <field name="name">Configuration IA</field>
+        <field name="res_model">ai.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune configuration IA définie.
+            </p>
+            <p>
+                Créez une configuration pour connecter Odoo au microservice IA.
+            </p>
+        </field>
+    </record>
+</odoo>
