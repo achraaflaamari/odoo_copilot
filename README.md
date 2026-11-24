@@ -60,7 +60,9 @@ CopilotOdoo/
 ├── ai_service/                # Microservice FastAPI + LangGraph
 │   ├── agents/
 │   │   ├── router.py          # Graphe LangGraph et routeur
-│   │   └── sales_agent.py     # Agent ventes
+│   │   ├── sales_agent.py     # Agent ventes
+│   │   ├── purchase_agent.py  # Agent achats (Phase 3)
+│   │   └── project_agent.py   # Agent projets (Phase 3)
 │   ├── tools/
 │   │   └── odoo_client.py     # Client JSON-RPC Odoo
 │   ├── rag/                   # Indexation et recherche (Phase 4)
@@ -184,20 +186,23 @@ Dans Odoo : **Copilot IA → Configuration → Créer**
 "Explique-moi ce qu'est un bon de commande"
 ```
 
-**Agent Achats** *(Phase 3)*
+**Agent Achats**
 ```
 "Quels sont les bons de commande en attente ?"
 "Quel fournisseur a le plus de commandes ce mois ?"
+"Crée un bon de commande pour 50 unités de papier A4 chez Office Pro"
 ```
 
-**Agent Projets** *(Phase 3)*
+**Agent Projets**
 ```
-"Quels projets sont en retard ?"
+"Quels projets sont en cours ?"
 "Montre-moi les tâches assignées à Jean"
+"Crée une tâche 'Révision contrat' dans le projet Commercial"
 ```
 
 ### Appel direct à l'API (pour tests)
 
+**Poser une question (lecture) :**
 ```bash
 curl -X POST http://localhost:8001/chat \
   -H "Content-Type: application/json" \
@@ -211,25 +216,45 @@ Réponse attendue :
   "answer": "Voici les 10 dernières commandes de vente : ...",
   "agent": "ventes",
   "status": "ok",
+  "draft_id": null,
   "draft_payload": null
 }
+```
+
+**Approuver un brouillon :**
+```bash
+# Si status == "draft" dans la réponse /chat, récupérer le draft_id puis :
+curl -X POST http://localhost:8001/approve/<draft_id> \
+  -H "X-API-Key: votre_service_api_key"
+```
+
+**Rejeter un brouillon :**
+```bash
+curl -X POST http://localhost:8001/reject/<draft_id> \
+  -H "X-API-Key: votre_service_api_key"
+```
+
+**Lister les brouillons en attente :**
+```bash
+curl http://localhost:8001/drafts \
+  -H "X-API-Key: votre_service_api_key"
 ```
 
 ---
 
 ## Validation humaine et journal
 
-### Circuit de validation (Phase 3+)
+### Circuit de validation
 
 ```
 Question utilisateur
        ↓
-Agent IA génère un brouillon (status: "draft")
-       ↓
-Enregistrement dans ai.action.log
-       ↓
-Utilisateur : Approuver ──► Exécution (status: "executed")
-           ou Rejeter  ──► Annulation (status: "rejected")
+Agent IA analyse la demande
+       ├── Lecture seule → Réponse directe (status: "ok")
+       └── Écriture demandée → Brouillon (status: "draft") + draft_id retourné
+                                   ↓
+                          POST /approve/<draft_id>  → Approuvé + journalisé
+                          POST /reject/<draft_id>   → Rejeté  + journalisé
 ```
 
 ### Consulter le journal
@@ -299,7 +324,45 @@ curl -X POST http://localhost:8001/chat \
 # Attendu : HTTP 403
 ```
 
-### Scénario 5 : Vérifier le module Odoo
+### Scénario 5 : Tester le routage vers l'agent achats
+
+```bash
+curl -X POST http://localhost:8001/chat \
+  -H "X-API-Key: votre_cle" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Liste les bons de commande récents", "user_id": 1}'
+# Attendu : agent == "achats", status == "ok"
+```
+
+### Scénario 6 : Tester le routage vers l'agent projets
+
+```bash
+curl -X POST http://localhost:8001/chat \
+  -H "X-API-Key: votre_cle" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Quels sont les projets en cours ?", "user_id": 1}'
+# Attendu : agent == "projets", status == "ok"
+```
+
+### Scénario 7 : Tester le circuit de brouillon et validation
+
+```bash
+# 1. Demander une création → génère un brouillon
+curl -X POST http://localhost:8001/chat \
+  -H "X-API-Key: votre_cle" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Crée une tâche Révision contrat dans le projet Commercial", "user_id": 1}'
+# Attendu : status == "draft", draft_id retourné
+
+# 2. Approuver le brouillon
+curl -X POST http://localhost:8001/approve/<draft_id> \
+  -H "X-API-Key: votre_cle"
+# Attendu : action == "approved", log_id présent
+
+# 3. Vérifier dans Odoo : Copilot IA → Journal des actions
+```
+
+### Scénario 8 : Vérifier le module Odoo
 
 1. Ouvrir Odoo → Applications → Rechercher "Copilot" → Installer
 2. Vérifier que le menu **Copilot IA** apparaît dans la barre de navigation
@@ -321,11 +384,10 @@ print(orders)
 
 | Limite | Description |
 |---|---|
-| Agents Achats et Projets | Non implémentés — Phase 3 |
 | Interface OWL | Pas encore de panneau de chat — Phase 4 |
 | RAG | Pas encore d'indexation documentaire — Phase 4 |
-| Brouillon d'écriture | Non implémenté — Phase 3 |
-| Endpoints approuver/rejeter | Non implémentés — Phase 3 |
+| Brouillons en mémoire | Les brouillons sont stockés en mémoire (perdus au redémarrage) — persistance en Phase 4 |
+| Exécution réelle des brouillons | L'approbation journalise mais n'écrit pas encore dans Odoo — Phase 4 |
 | Streaming | Non implémenté — Phase 4 |
 | Filtrage injections de prompt | Non implémenté — Phase 4 |
 
@@ -333,6 +395,5 @@ print(orders)
 
 ## Perspectives
 
-- **Phase 3** : Agents Achats et Projets, brouillons d'écriture, circuit d'approbation, journalisation complète
-- **Phase 4** : Interface OWL, streaming, RAG sur la documentation Odoo, filtrage des injections
+- **Phase 4** : Interface OWL, streaming, RAG sur la documentation Odoo, persistance des brouillons, exécution réelle des actions approuvées, filtrage des injections
 - **Phase 5** : Documentation complète, schémas d'architecture, guide d'installation, scénarios de vérification finaux

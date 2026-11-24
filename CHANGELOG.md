@@ -2,7 +2,7 @@
 
 Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 
-**Dernière phase : Phase 2 : Socle IA (terminée)**
+**Dernière phase : Phase 3 : Agents spécialisés (terminée)**
 
 ---
 
@@ -38,17 +38,28 @@ Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 ---
 
 ## Phase 3 : Agents spécialisés
-**Statut** : à faire
+**Statut** : terminée — 2026-11-24
 
 ### Tâches réalisées
-- [ ] Agent Achats
-- [ ] Agent Projets
-- [ ] Mécanisme de brouillon
-- [ ] Endpoints approuver / rejeter
-- [ ] Journalisation dans `ai.action.log`
+- [x] Agent Achats (`ai_service/agents/purchase_agent.py`) :
+  - Outils : `get_purchase_orders_tool`, `get_purchase_order_detail_tool`, `propose_purchase_order_tool`
+  - Lecture seule par défaut ; création via brouillon uniquement
+- [x] Agent Projets (`ai_service/agents/project_agent.py`) :
+  - Outils : `get_projects_tool`, `get_project_tasks_tool`, `propose_task_tool`
+  - Lecture seule par défaut ; création de tâches via brouillon uniquement
+- [x] Mécanisme de brouillon dans `main.py` :
+  - Stockage en mémoire des brouillons avec UUID unique (`draft_id`)
+  - Détection automatique des brouillons dans les étapes intermédiaires LangGraph
+- [x] Endpoint `POST /approve/{draft_id}` : approbation et journalisation dans `ai.action.log`
+- [x] Endpoint `POST /reject/{draft_id}` : rejet et journalisation dans `ai.action.log`
+- [x] Endpoint `GET /drafts` : liste des brouillons en attente
+- [x] Journalisation dans Odoo `ai.action.log` à chaque étape (brouillon, approbation, rejet)
+- [x] Routeur LangGraph mis à jour : routage vers `purchase_agent` et `project_agent`
+- [x] Version microservice passée à `2.0.0`
 
 ### Documentation
--
+- [x] README mis à jour : structure du dépôt, exemples de questions agents Achats/Projets, circuit de validation complet, 8 scénarios de vérification, limites mises à jour
+- [x] CHANGELOG mis à jour
 
 ---
 

@@ -2,6 +2,7 @@
 """
 Graphe LangGraph principal : agent routeur + agents spécialisés.
 Le routeur classifie la question et délègue à l'agent approprié.
+Phase 3 : ajout des agents Achats et Projets.
 """
 
 import os
@@ -14,6 +15,8 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
 
 from agents.sales_agent import run_sales_agent
+from agents.purchase_agent import run_purchase_agent
+from agents.project_agent import run_project_agent
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +87,10 @@ def route_to_agent(state: AgentState) -> str:
     agent = state.get("agent", "general")
     if agent == "ventes":
         return "sales_agent"
-    # Tous les autres cas vont vers le nœud général
+    if agent == "achats":
+        return "purchase_agent"
+    if agent == "projets":
+        return "project_agent"
     return "general"
 
 
@@ -98,6 +104,44 @@ def sales_agent_node(state: AgentState) -> AgentState:
         État mis à jour avec la réponse de l'agent ventes.
     """
     result = run_sales_agent(question=state["question"], user_id=state["user_id"])
+    return {
+        **state,
+        "answer": result["answer"],
+        "agent": result["agent"],
+        "status": result["status"],
+        "draft_payload": result.get("draft_payload"),
+    }
+
+
+def purchase_agent_node(state: AgentState) -> AgentState:
+    """Nœud agent achats : délègue au purchase_agent.
+
+    Args:
+        state: État courant du graphe.
+
+    Returns:
+        État mis à jour avec la réponse de l'agent achats.
+    """
+    result = run_purchase_agent(question=state["question"], user_id=state["user_id"])
+    return {
+        **state,
+        "answer": result["answer"],
+        "agent": result["agent"],
+        "status": result["status"],
+        "draft_payload": result.get("draft_payload"),
+    }
+
+
+def project_agent_node(state: AgentState) -> AgentState:
+    """Nœud agent projets : délègue au project_agent.
+
+    Args:
+        state: État courant du graphe.
+
+    Returns:
+        État mis à jour avec la réponse de l'agent projets.
+    """
+    result = run_project_agent(question=state["question"], user_id=state["user_id"])
     return {
         **state,
         "answer": result["answer"],
@@ -153,6 +197,8 @@ def build_graph() -> StateGraph:
     # Ajout des nœuds
     builder.add_node("classify", classify)
     builder.add_node("sales_agent", sales_agent_node)
+    builder.add_node("purchase_agent", purchase_agent_node)
+    builder.add_node("project_agent", project_agent_node)
     builder.add_node("general", general_node)
 
     # Nœud de départ
@@ -164,12 +210,16 @@ def build_graph() -> StateGraph:
         route_to_agent,
         {
             "sales_agent": "sales_agent",
+            "purchase_agent": "purchase_agent",
+            "project_agent": "project_agent",
             "general": "general",
         },
     )
 
     # Les nœuds terminaux pointent vers END
     builder.add_edge("sales_agent", END)
+    builder.add_edge("purchase_agent", END)
+    builder.add_edge("project_agent", END)
     builder.add_edge("general", END)
 
     return builder.compile()
