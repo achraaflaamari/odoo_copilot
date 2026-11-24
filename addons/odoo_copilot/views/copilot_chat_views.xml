@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action client : panneau de chat OWL -->
+    <record id="action_copilot_chat" model="ir.actions.client">
+        <field name="name">Copilot IA — Chat</field>
+        <field name="tag">odoo_copilot.chat_panel</field>
+    </record>
+</odoo>

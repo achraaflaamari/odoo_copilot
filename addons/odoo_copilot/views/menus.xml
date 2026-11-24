@@ -8,6 +8,15 @@
         web_icon="odoo_copilot,static/description/icon.png"
     />
 
+    <!-- Sous-menu : Chat IA (panneau OWL) -->
+    <menuitem
+        id="menu_copilot_chat"
+        name="Chat IA"
+        parent="menu_copilot_root"
+        action="action_copilot_chat"
+        sequence="5"
+    />
+
     <!-- Sous-menu : Journal des actions -->
     <menuitem
         id="menu_copilot_action_log"

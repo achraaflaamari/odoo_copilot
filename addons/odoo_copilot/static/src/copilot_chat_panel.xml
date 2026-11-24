@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+  <!--
+    Template OWL : CopilotChatPanel
+    Panneau de chat intégré dans Odoo pour interagir avec les agents IA.
+  -->
+  <t t-name="odoo_copilot.CopilotChatPanel">
+    <div class="o_copilot_chat_panel d-flex flex-column h-100">
+
+      <!-- En-tête -->
+      <div class="o_copilot_header d-flex align-items-center px-3 py-2 bg-primary text-white">
+        <i class="fa fa-robot me-2"/>
+        <span class="fw-bold fs-5">Copilot IA</span>
+        <small class="ms-auto opacity-75">Agents : Ventes · Achats · Projets</small>
+      </div>
+
+      <!-- Zone des messages -->
+      <div class="o_copilot_messages flex-grow-1 overflow-auto p-3" t-ref="messages">
+
+        <!-- Message de bienvenue si aucun message -->
+        <t t-if="state.messages.length === 0">
+          <div class="text-center text-muted mt-5">
+            <i class="fa fa-comments fa-3x mb-3 d-block"/>
+            <p class="fs-6">Posez une question sur vos ventes, achats ou projets.</p>
+            <small>Exemples :<br/>
+              « Montre-moi les 5 dernières commandes »<br/>
+              « Quels projets sont en cours ? »<br/>
+              « Liste les bons de commande en attente »
+            </small>
+          </div>
+        </t>
+
+        <!-- Boucle sur les messages -->
+        <t t-foreach="state.messages" t-as="msg" t-key="msg_index">
+
+          <!-- Message utilisateur -->
+          <t t-if="msg.role === 'user'">
+            <div class="o_copilot_msg_user d-flex justify-content-end mb-3">
+              <div class="o_copilot_bubble_user bg-primary text-white rounded-3 px-3 py-2 mw-75">
+                <t t-esc="msg.text"/>
+              </div>
+              <i class="fa fa-user-circle fa-2x ms-2 text-primary align-self-end"/>
+            </div>
+          </t>
+
+          <!-- Message agent -->
+          <t t-if="msg.role === 'agent'">
+            <div class="o_copilot_msg_agent d-flex mb-3">
+              <i class="fa fa-robot fa-2x me-2 text-success align-self-end"/>
+              <div class="d-flex flex-column mw-75">
+
+                <!-- Bulle de réponse -->
+                <div t-attf-class="o_copilot_bubble_agent rounded-3 px-3 py-2
+                    {{ msg.status === 'error' ? 'bg-danger text-white' :
+                       msg.status === 'draft' ? 'bg-warning' : 'bg-light border' }}">
+
+                  <!-- Animation de chargement -->
+                  <t t-if="msg.loading">
+                    <span class="o_copilot_loading">
+                      <i class="fa fa-circle-o-notch fa-spin me-1"/>
+                      Analyse en cours…
+                    </span>
+                  </t>
+                  <t t-else="">
+                    <!-- Badge agent -->
+                    <div class="mb-1">
+                      <span t-attf-class="badge me-1
+                          {{ msg.agent === 'ventes'  ? 'bg-primary'   :
+                             msg.agent === 'achats'  ? 'bg-info'      :
+                             msg.agent === 'projets' ? 'bg-success'   :
+                             msg.agent === 'erreur'  ? 'bg-danger'    : 'bg-secondary' }}">
+                        <t t-esc="msg.agent ?? 'ia'"/>
+                      </span>
+                      <t t-if="msg.status === 'draft'">
+                        <span class="badge bg-warning text-dark">
+                          <i class="fa fa-clock-o me-1"/>brouillon
+                        </span>
+                      </t>
+                      <t t-if="msg.status === 'approved'">
+                        <span class="badge bg-success">
+                          <i class="fa fa-check me-1"/>approuvé
+                        </span>
+                      </t>
+                      <t t-if="msg.status === 'rejected'">
+                        <span class="badge bg-secondary">
+                          <i class="fa fa-times me-1"/>rejeté
+                        </span>
+                      </t>
+                    </div>
+
+                    <!-- Texte de la réponse -->
+                    <div class="o_copilot_answer" style="white-space: pre-wrap;">
+                      <t t-esc="msg.text"/>
+                    </div>
+                  </t>
+                </div>
+
+                <!-- Boutons Approuver / Rejeter (uniquement si brouillon en attente) -->
+                <t t-if="msg.status === 'draft' and msg.draft_id">
+                  <div class="d-flex gap-2 mt-2">
+                    <button
+                      class="btn btn-success btn-sm"
+                      t-on-click="() => approveDraft(msg.draft_id)">
+                      <i class="fa fa-check me-1"/>Approuver
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary btn-sm"
+                      t-on-click="() => rejectDraft(msg.draft_id)">
+                      <i class="fa fa-times me-1"/>Rejeter
+                    </button>
+                  </div>
+                </t>
+
+              </div>
+            </div>
+          </t>
+
+        </t>
+      </div>
+
+      <!-- Barre de saisie -->
+      <div class="o_copilot_input_bar border-top px-3 py-2 bg-white">
+        <div class="input-group">
+          <textarea
+            class="form-control"
+            rows="2"
+            placeholder="Posez votre question… (Entrée pour envoyer)"
+            t-model="state.input"
+            t-on-keydown="onKeydown"
+            t-att-disabled="state.loading"/>
+          <button
+            class="btn btn-primary"
+            t-on-click="sendMessage"
+            t-att-disabled="state.loading or !state.input.trim()">
+            <t t-if="state.loading">
+              <i class="fa fa-circle-o-notch fa-spin"/>
+            </t>
+            <t t-else="">
+              <i class="fa fa-paper-plane"/>
+            </t>
+          </button>
+        </div>
+        <t t-if="state.error">
+          <small class="text-danger mt-1 d-block">
+            <i class="fa fa-exclamation-triangle me-1"/>
+            <t t-esc="state.error"/>
+          </small>
+        </t>
+      </div>
+
+    </div>
+  </t>
+
+</templates>

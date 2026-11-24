@@ -1,0 +1,45 @@
+/* OdooCopilot — styles du panneau de chat */
+
+.o_copilot_chat_panel {
+    min-height: 500px;
+    font-size: 0.95rem;
+}
+
+.o_copilot_header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.o_copilot_messages {
+    background: #f8f9fa;
+    scroll-behavior: smooth;
+}
+
+.o_copilot_bubble_user,
+.o_copilot_bubble_agent {
+    max-width: 100%;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.o_copilot_bubble_agent.bg-warning {
+    border-left: 4px solid #fd7e14 !important;
+}
+
+.o_copilot_answer {
+    font-size: 0.93rem;
+}
+
+.o_copilot_loading {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.o_copilot_input_bar textarea {
+    resize: none;
+    font-size: 0.93rem;
+}
+
+.mw-75 {
+    max-width: 75%;
+}

@@ -2,7 +2,7 @@
 
 Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 
-**Dernière phase : Phase 3 : Agents spécialisés (terminée)**
+**Dernière phase : Phase 4 : Interface et sécurité (terminée)**
 
 ---
 
@@ -22,18 +22,37 @@ Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 ---
 
 ## Phase 4 : Interface et sécurité
-**Statut** : à faire
+**Statut** : terminée — 2026-11-24
 
 ### Tâches réalisées
-- [ ] Panneau de chat OWL
-- [ ] Réponses en streaming
-- [ ] Boutons Approuver / Rejeter
-- [ ] Lecture seule par défaut et liste blanche des outils
-- [ ] Filtrage contre l'injection de prompt
-- [ ] RAG (indexation et outil de recherche)
+- [x] Panneau de chat OWL (`addons/odoo_copilot/static/src/copilot_chat_panel.js/.xml/.css`) :
+  - Composant OWL avec boucle de messages, bulles utilisateur/agent, badges d'agent colorés
+  - Boutons Approuver / Rejeter sur les messages de type brouillon (status == "draft")
+  - Champ de saisie avec envoi via Entrée, animation de chargement
+- [x] Contrôleur HTTP Odoo (`controllers/copilot_controller.py`) :
+  - Routes `/copilot/chat`, `/copilot/approve`, `/copilot/reject` (type JSON, auth utilisateur)
+  - Proxy sécurisé vers le microservice FastAPI avec la clé API de la config active
+- [x] Action client OWL enregistrée dans `views/copilot_chat_views.xml`
+- [x] Menu "Chat IA" ajouté dans les menus Copilot IA
+- [x] Filtrage anti-injection de prompt (`ai_service/tools/prompt_filter.py`) :
+  - 14 patterns regex (FR + EN) couvrant les injections courantes
+  - Troncature à 2000 caractères, suppression des balises HTML
+  - Réponse "bloqué" + journalisation dans `ai.action.log`
+- [x] RAG — Retrieval-Augmented Generation (`ai_service/rag/retriever.py`) :
+  - ChromaDB (base vectorielle persistante) + SentenceTransformers (modèle multilingue)
+  - Mode dégradé gracieux si packages absents
+  - Méthodes : `index_documents()`, `index_text_file()`, `search()`, `search_as_context()`
+- [x] Script d'indexation initiale (`ai_service/rag/index_docs.py`) avec 4 documents de démo
+- [x] Endpoints RAG sur le microservice : `POST /rag/index`, `POST /rag/search`
+- [x] Streaming SSE (`GET /stream`) : réponse mot par mot via Server-Sent Events
+- [x] Contexte RAG injecté automatiquement dans les questions envoyées au LLM
+- [x] Version microservice passée à `3.0.0`
+- [x] `__manifest__.py` mis à jour : version `20.0.2.0.0`, assets OWL, dépendance `web`
+- [x] `requirements.txt` mis à jour : `chromadb>=0.5.0`, `sentence-transformers>=3.0.0`
 
 ### Documentation
--
+- [x] README mis à jour : nouvelle structure du dépôt, stack technique, 11 scénarios de vérification, limites mises à jour
+- [x] CHANGELOG mis à jour
 
 ---
 
