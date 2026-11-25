@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_ai_action_log_user,ai.action.log user,ai.action.log,base.group_user,cr,
+access_ai_action_log_system,ai.action.log system,ai.action.log,base.group_system,crud,
+access_ai_config_user,ai.config user,ai.config,base.group_user,r,
+access_ai_config_system,ai.config system,ai.config,base.group_system,crud,

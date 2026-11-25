@@ -6,6 +6,33 @@ Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 
 ---
 
+## Correctif : lancement Odoo 20 et compatibilité `ir.access`
+**Statut** : terminé — 2026-11-25
+
+### Tâches réalisées
+- [x] Cause du `ModuleNotFoundError: No module named 'odoo'` identifiée : le script `odoo` a pour shebang `#! /usr/bin/python3`, or le Python système est passé en 3.15 alors que le paquet Odoo 20 est construit pour Python 3.14
+- [x] Lancement corrigé : utiliser l'interpréteur du venv Odoo qui possède le paquet
+      `/home/achraf/odoo20/.venv/bin/python /home/achraf/odoo20/extracted/usr/bin/odoo ...`
+- [x] Paquet Odoo extrait sans `__init__.py` (fichier présent sous le nom `init.py`) : l'import créait un paquet « namespace » vide (`odoo.__file__ is None`), d'où l'échec de `odoo.cli`
+- [x] Réparation de l'installation : `__init__.py` recréé en lien symbolique vers `init.py`
+- [x] Compatibilité Odoo 20 : `ir.model.access` a été remplacé par `ir.access` avec les colonnes `model_id,group_id/id,operation,domain`
+- [x] `security/ir.model.access.csv` → `security/ir.access.csv` (nouveau format : `cr`, `crud`, `r`), manifest mis à jour
+- [x] Modules `sale_management`, `purchase`, `project` puis `odoo_copilot` installés sur la base `odoo`
+
+### Vérifications
+- [x] `odoo.release.version` → `20.0-20261006`
+- [x] Installation des modules métier : 73 modules chargés, code de sortie 0
+- [x] Installation de `odoo_copilot` : 74 modules chargés, code de sortie 0
+- [x] Droits `ir.access` créés pour `ai.action.log` (`cr` utilisateur / `crud` administrateur) et `ai.config` (`r` / `crud`)
+- [x] Serveur Odoo démarré, `GET /web/login` → HTTP 200
+
+### Documentation
+- [x] README : commandes Odoo avec `$ODOO_PY`, encadré sur le shebang, ligne de dépannage `ModuleNotFoundError`
+- [x] AGENT.md : commandes de lancement et convention `security/ir.access.csv`
+- [x] CHANGELOG mis à jour
+
+---
+
 ## Correctif Phase 4 : installation RAG allégée
 **Statut** : terminé — 2026-11-25
 

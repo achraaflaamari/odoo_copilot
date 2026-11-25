@@ -6,7 +6,7 @@
     'category': 'Tools',
     'depends': ['base', 'mail', 'web'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/ai_config_data.xml',
         'views/ai_action_log_views.xml',
         'views/ai_config_views.xml',

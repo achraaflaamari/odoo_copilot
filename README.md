@@ -129,7 +129,7 @@ CopilotOdoo/
 │       │   ├── copilot_chat_views.xml # Action client OWL
 │       │   └── menus.xml
 │       ├── security/
-│       │   └── ir.model.access.csv
+│       │   └── ir.access.csv
 │       └── data/
 │           └── ai_config_data.xml
 ├── ai_service/                # Microservice FastAPI + LangGraph
@@ -280,23 +280,37 @@ addons_path = /home/achraf/Documents/CopilotOdoo/addons,/home/achraf/odoo20/extr
 > Adapter le second chemin à votre installation Odoo (le premier doit pointer
 > vers le dossier `addons/` de ce dépôt).
 
-Installer (première fois) ou mettre à jour le module :
+Installer (première fois) ou mettre à jour le module.
+
+> ⚠️ **Important** : le script `odoo` commence par `#! /usr/bin/python3` et ne
+> fonctionne donc que si **ce** Python contient le paquet `odoo`. C'est rarement
+> le cas (système mis à jour, paquet Odoo installé dans un venv dédié). Lancez
+> toujours le script avec l'interpréteur qui possède `odoo` :
+>
+> ```bash
+> # Vérifier l'interpréteur
+> /home/achraf/odoo20/.venv/bin/python -c "import odoo; print(odoo.release.version)"
+>
+> # Sinon, l'erreur suivante apparaît :
+> # ModuleNotFoundError: No module named 'odoo'
+> ```
 
 ```bash
+export ODOO_PY=/home/achraf/odoo20/.venv/bin/python   # interpréteur possédant odoo
 export ODOO_BIN=/home/achraf/odoo20/extracted/usr/bin/odoo
 export ODOO_CONF=$HOME/odoo20/odoo.conf
 
 # Première installation
-python "$ODOO_BIN" -c "$ODOO_CONF" -i odoo_copilot -d odoo
+"$ODOO_PY" "$ODOO_BIN" -c "$ODOO_CONF" -i odoo_copilot -d odoo
 
 # Mise à jour après modification du code ou des assets
-python "$ODOO_BIN" -c "$ODOO_CONF" -u odoo_copilot -d odoo
+"$ODOO_PY" "$ODOO_BIN" -c "$ODOO_CONF" -u odoo_copilot -d odoo
 ```
 
 Puis lancer Odoo :
 
 ```bash
-python "$ODOO_BIN" -c "$ODOO_CONF"
+"$ODOO_PY" "$ODOO_BIN" -c "$ODOO_CONF"
 ```
 
 Dans l'interface : **Applications → Mettre à jour la liste des applications →
@@ -682,6 +696,7 @@ PY
 | « Le microservice IA n'est pas configuré » | Aucune `ai.config` active | Créer/activer une configuration dans Copilot IA → Configuration |
 | Timeout du panneau de chat | Microservice arrêté ou URL erronée | Vérifier `uvicorn` sur le port 8001 et l'URL dans `ai.config` |
 | Module absent des Applications | `addons_path` incorrect ou liste non mise à jour | Corriger `odoo.conf`, redémarrer Odoo, « Mettre à jour la liste des applications » |
+| `ModuleNotFoundError: No module named 'odoo'` | Le script `odoo` est lancé avec un Python qui ne contient pas le paquet (shebang `/usr/bin/python3`) | Lancer avec l'interpréteur du venv Odoo : `"$ODOO_PY" "$ODOO_BIN" ...` |
 | Erreur JSON-RPC Odoo | URL/base/login/clé API invalides ou droits insuffisants | Vérifier `.env`, la clé API et les groupes de l'utilisateur technique |
 | Brouillons perdus | Stockage en mémoire | Comportement connu ; voir [Limites connues](#limites-connues) |
 

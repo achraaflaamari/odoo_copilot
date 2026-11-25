@@ -83,7 +83,7 @@ odoo-copilot/
 6. Ne pas ajouter de ML, d'outil d'observabilité, ni de livrables (vidéo, CV, candidature) au dépôt.
 
 ### 4.2 Règles Odoo
-1. Respecter les conventions Odoo : nom de modèle `ai.xxx`, préfixe de module `odoo_copilot`, fichiers XML dans `views/`, droits dans `security/ir.model.access.csv`.
+1. Respecter les conventions Odoo : nom de modèle `ai.xxx`, préfixe de module `odoo_copilot`, fichiers XML dans `views/`, droits dans `security/ir.access.csv` (format Odoo 20 : colonnes `model_id,group_id/id,operation,domain`).
 2. Toujours définir les droits d'accès pour chaque nouveau modèle.
 3. Ne pas modifier les modules standard d'Odoo. Étendre par héritage uniquement.
 4. Le microservice ne contacte Odoo que via un **utilisateur technique** aux droits limités.
@@ -161,10 +161,12 @@ pip install -r requirements-rag.txt      # RAG optionnel (ChromaDB + ONNX)
 uvicorn main:app --reload --port 8001
 
 # Odoo (local) : lancer le serveur
-python /home/achraf/odoo20/extracted/usr/bin/odoo -c ~/odoo20/odoo.conf
+# Le shebang du script odoo pointe sur /usr/bin/python3 : utiliser l'interpréteur
+# du venv Odoo qui contient le paquet `odoo`.
+/home/achraf/odoo20/.venv/bin/python /home/achraf/odoo20/extracted/usr/bin/odoo -c ~/odoo20/odoo.conf
 
 # Odoo (local) : mettre à jour le module
-python /home/achraf/odoo20/extracted/usr/bin/odoo -c ~/odoo20/odoo.conf -u odoo_copilot -d <nom_base>
+/home/achraf/odoo20/.venv/bin/python /home/achraf/odoo20/extracted/usr/bin/odoo -c ~/odoo20/odoo.conf -u odoo_copilot -d <nom_base>
 ```
 
 ---
