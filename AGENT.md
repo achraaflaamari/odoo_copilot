@@ -23,7 +23,7 @@ Ce fichier est lu en premier par tout agent IA (ou développeur) qui travaille s
 | Microservice | FastAPI, Pydantic |
 | Agents | LangGraph, LangChain |
 | LLM | Groq (Llama 3.3 70B) |
-| RAG | Sentence-Transformers + Chroma (ou pgvector) |
+| RAG | ChromaDB + embeddings ONNX (par défaut, sans PyTorch) ; Sentence-Transformers optionnel |
 | Accès Odoo | JSON-RPC / XML-RPC |
 | Versioning | Git / GitHub |
 
@@ -155,7 +155,8 @@ Il n'y a **aucun livrable** hors dépôt (pas de vidéo, pas de mise à jour du 
 # Microservice
 cd ai_service
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt          # cœur (léger, sans PyTorch/CUDA)
+pip install -r requirements-rag.txt      # RAG optionnel (ChromaDB + ONNX)
 uvicorn main:app --reload --port 8001
 
 # Odoo (local) : lancer le serveur
@@ -177,4 +178,5 @@ ODOO_USER=
 ODOO_API_KEY=
 SERVICE_API_KEY=
 CHROMA_PATH=./rag/chroma_db
+RAG_EMBEDDING_BACKEND=chroma-onnx
 ```

@@ -21,7 +21,7 @@ from rag.retriever import rag_retriever
 def main() -> None:
     """Indexe les documents de démonstration et les fichiers du dossier docs/."""
     if not rag_retriever.is_ready:
-        print("❌ RAG non disponible. Installez : pip install chromadb sentence-transformers")
+        print("❌ RAG non disponible. Installez le RAG optionnel : pip install -r requirements-rag.txt")
         return
 
     # Documents de référence intégrés (documentation Odoo simplifiée)

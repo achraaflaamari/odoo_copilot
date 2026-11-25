@@ -116,6 +116,7 @@ def health_check() -> dict[str, Any]:
         "version": "3.0.0",
         "rag_ready": rag_retriever.is_ready,
         "rag_documents": rag_retriever.document_count(),
+        "rag_backend": rag_retriever.embedding_backend,
     }
 
 
@@ -337,7 +338,10 @@ def rag_index(
     Body : {"documents": [{"id": "...", "text": "...", "metadata": {...}}]}
     """
     if not rag_retriever.is_ready:
-        raise HTTPException(status_code=503, detail="RAG non disponible. Installez chromadb et sentence-transformers.")
+        raise HTTPException(
+            status_code=503,
+            detail="RAG non disponible. Installez le RAG optionnel : pip install -r requirements-rag.txt",
+        )
     indexed = rag_retriever.index_documents(request.documents)
     return {"indexed": indexed, "total": rag_retriever.document_count()}
 
@@ -349,7 +353,10 @@ def rag_search(
 ) -> dict:
     """Recherche des documents pertinents dans ChromaDB."""
     if not rag_retriever.is_ready:
-        raise HTTPException(status_code=503, detail="RAG non disponible.")
+        raise HTTPException(
+            status_code=503,
+            detail="RAG non disponible. Installez le RAG optionnel : pip install -r requirements-rag.txt",
+        )
     results = rag_retriever.search(query=request.query, n_results=request.n_results)
     return {"query": request.query, "results": results}
 

@@ -1,0 +1,24 @@
+# RAG optionnel — installation légère.
+# ChromaDB + embeddings ONNX MiniLM : pas de PyTorch, pas de CUDA, pas de triton.
+#   pip install -r requirements-rag.txt
+chromadb>=0.5.0
+# Requis par le backend d'embeddings ONNX (roue ~17 Mo, pas de GPU)
+onnxruntime>=1.14.1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Variante Sentence-Transformers (optionnelle, meilleure qualité en français)
+#
+# ⚠️  Ne PAS faire `pip install sentence-transformers` directement : pip installe
+#     la roue PyTorch CUDA par défaut, qui télécharge triton (~285 Mo) et les
+#     paquets nvidia-* (~2 Go). Sur une connexion instable, l'installation échoue.
+#
+# Installation correcte (PyTorch CPU uniquement) :
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install sentence-transformers>=3.0.0
+#
+# Puis dans .env :
+#   RAG_EMBEDDING_BACKEND=sentence-transformers
+#
+# Après un changement de backend, réindexer (les vecteurs ne sont pas compatibles) :
+#   rm -rf rag/chroma_db && python rag/index_docs.py
+# ─────────────────────────────────────────────────────────────────────────────

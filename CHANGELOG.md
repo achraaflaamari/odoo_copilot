@@ -2,7 +2,27 @@
 
 Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 
-**Dernière phase : Phase 4 : Interface et sécurité (terminée)**
+**Dernière phase : Phase 4 : Interface et sécurité (terminée) — correctif installation RAG**
+
+---
+
+## Correctif Phase 4 : installation RAG allégée
+**Statut** : terminé — 2026-11-25
+
+### Tâches réalisées
+- [x] Cause identifiée : `sentence-transformers` tirait PyTorch CUDA → `triton` (~285 Mo) + paquets `nvidia-*` (~2 Go), dont le téléchargement échouait en boucle pendant l'installation des phases 3-4
+- [x] `requirements.txt` allégé : uniquement les dépendances cœur (plus de PyTorch / CUDA / triton)
+- [x] Nouveau `requirements-rag.txt` : RAG optionnel via ChromaDB + embeddings ONNX (sans GPU)
+- [x] `rag/retriever.py` : backend d'embeddings configurable (`RAG_EMBEDDING_BACKEND`, défaut `chroma-onnx`), repli automatique sur ONNX si Sentence-Transformers est absent
+- [x] Indexation groupée des documents (un seul calcul d'embeddings par lot, repli document par document en cas d'erreur)
+- [x] Endpoint `/health` : expose `rag_backend`
+- [x] Messages d'erreur et script `rag/index_docs.py` mis à jour
+- [x] `.env.example` : ajout de `RAG_EMBEDDING_BACKEND`
+
+### Documentation
+- [x] README : installation en deux étapes (cœur + RAG optionnel), procédure PyTorch CPU si Sentence-Transformers est vraiment nécessaire, stack et limites mises à jour
+- [x] AGENT.md : stack RAG, commandes d'installation et variables d'environnement mises à jour
+- [x] CHANGELOG mis à jour
 
 ---
 

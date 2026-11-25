@@ -74,10 +74,11 @@ CopilotOdoo/
 │   │   ├── odoo_client.py     # Client JSON-RPC Odoo
 │   │   └── prompt_filter.py   # Filtrage anti-injection (Phase 4)
 │   ├── rag/
-│   │   ├── retriever.py       # ChromaDB + SentenceTransformers (Phase 4)
+│   │   ├── retriever.py       # ChromaDB + embeddings ONNX (Phase 4)
 │   │   └── index_docs.py      # Script d'indexation initiale (Phase 4)
 │   ├── main.py                # Point d'entrée FastAPI
-│   └── requirements.txt
+│   ├── requirements.txt       # Dépendances cœur (sans PyTorch/CUDA)
+│   └── requirements-rag.txt   # RAG optionnel (ChromaDB + ONNX)
 ├── docs/                      # Schémas et documentation détaillée
 ├── AGENT.md                   # Règles du projet (lire en premier)
 ├── CHANGELOG.md
@@ -97,7 +98,7 @@ CopilotOdoo/
 | Microservice | FastAPI 0.115, Pydantic 2.9, Uvicorn |
 | Agents | LangGraph 0.2, LangChain 0.3 |
 | LLM | Groq — Llama 3.3 70B Versatile |
-| RAG | Sentence-Transformers (paraphrase-multilingual-MiniLM-L12-v2) + ChromaDB |
+| RAG | ChromaDB + embeddings ONNX MiniLM (sans PyTorch) ; Sentence-Transformers optionnel |
 | Accès Odoo | JSON-RPC via `requests` |
 | Frontend | OWL (Odoo Web Library), Bootstrap 5 |
 | Versioning | Git |
@@ -140,6 +141,31 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+Cette installation est **légère** : elle ne télécharge ni PyTorch, ni CUDA, ni triton.
+
+**RAG (optionnel)** — ChromaDB + embeddings ONNX, sans GPU :
+
+```bash
+pip install -r requirements-rag.txt
+```
+
+> ⚠️ **Ne pas installer `sentence-transformers` directement.** Pip télécharge alors la
+> roue PyTorch CUDA, qui embarque `triton` (~285 Mo) et les paquets `nvidia-*` (~2 Go).
+> Sur une connexion instable, le téléchargement de `triton` échoue en boucle.
+> Si vous voulez malgré tout la meilleure qualité d'embeddings en français, installez
+> d'abord PyTorch **CPU** :
+>
+> ```bash
+> pip install torch --index-url https://download.pytorch.org/whl/cpu
+> pip install sentence-transformers>=3.0.0
+> # puis dans .env : RAG_EMBEDDING_BACKEND=sentence-transformers
+> # réindexer : rm -rf rag/chroma_db && python rag/index_docs.py
+> ```
+
+Le backend d'embeddings se choisit avec `RAG_EMBEDDING_BACKEND` (`chroma-onnx` par
+défaut, `sentence-transformers` en option). Les vecteurs des deux backends ne sont pas
+compatibles : réindexez après un changement.
 
 ### 4. Lancer le microservice
 
@@ -302,7 +328,7 @@ Chaque entrée affiche :
 cd ai_service && source .venv/bin/activate
 uvicorn main:app --port 8001
 curl http://localhost:8001/health
-# Attendu : {"status": "ok", "version": "3.0.0", "rag_ready": true/false}
+# Attendu : {"status": "ok", "version": "3.0.0", "rag_ready": true/false, "rag_backend": "chroma-onnx"}
 ```
 
 ### Scénario 2 : Tester le routage vers l'agent ventes
@@ -430,7 +456,7 @@ print(orders)
 | Streaming natif token-par-token | Simulé mot par mot — le vrai streaming par token nécessite un callback LangChain dédié (Phase 5+) |
 | Brouillons en mémoire | Les brouillons sont perdus au redémarrage du microservice — persistance en base prévue en Phase 5 |
 | Exécution réelle des brouillons | L'approbation journalise mais n'écrit pas encore dans Odoo — circuit complet en Phase 5 |
-| RAG — packages optionnels | chromadb et sentence-transformers doivent être installés séparément (`pip install chromadb sentence-transformers`) |
+| RAG — packages optionnels | Le RAG est séparé dans `requirements-rag.txt` (ChromaDB + embeddings ONNX, sans PyTorch/CUDA). `sentence-transformers` reste optionnel et doit être installé avec la roue PyTorch **CPU** (voir README) |
 
 ---
 

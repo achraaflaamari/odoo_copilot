@@ -1,3 +1,5 @@
+# Dépendances cœur du microservice.
+# Installation rapide : aucun PyTorch / CUDA / triton n'est téléchargé.
 fastapi>=0.115.0
 uvicorn[standard]>=0.32.0
 pydantic>=2.12
@@ -7,6 +9,6 @@ langgraph>=0.2.60
 requests>=2.32.3
 python-dotenv>=1.0.1
 httpx>=0.27.2
-# RAG — optionnel (commenter si non utilisé)
-chromadb>=0.5.0
-sentence-transformers>=3.0.0
+
+# RAG (optionnel) : voir requirements-rag.txt
+#   pip install -r requirements-rag.txt
