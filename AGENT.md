@@ -21,7 +21,7 @@ Ce fichier est lu en premier par tout agent IA (ou développeur) qui travaille s
 | ERP | Odoo 20 (local), Python ORM, XML, OWL/JavaScript |
 | Base de données | PostgreSQL |
 | Microservice | FastAPI, Pydantic |
-| Agents | LangGraph, LangChain |
+| Agents | LangGraph 1.x, LangChain 1.x |
 | LLM | Groq (Llama 3.3 70B) |
 | RAG | ChromaDB + embeddings ONNX (par défaut, sans PyTorch) ; Sentence-Transformers optionnel |
 | Accès Odoo | JSON-RPC / XML-RPC |
@@ -63,7 +63,8 @@ odoo-copilot/
 │   ├── tools/              # outils d'accès à Odoo
 │   ├── rag/                # indexation et recherche
 │   └── main.py
-├── docs/                   # schémas et documentation détaillée
+├── docs/                   # Schémas et documentation détaillée
+│   └── architecture.md     # Diagrammes Mermaid et flux
 ├── AGENT.md
 ├── CHANGELOG.md
 └── README.md

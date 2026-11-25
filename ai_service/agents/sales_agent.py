@@ -9,10 +9,9 @@ import logging
 from typing import Any
 
 from langchain_groq import ChatGroq
-from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain.tools import tool
-from langchain_core.prompts import ChatPromptTemplate
 
+from agents.tool_agent import run_tool_agent
 from tools.odoo_client import odoo_client
 
 logger = logging.getLogger(__name__)
@@ -54,13 +53,6 @@ Réponds en français, de manière concise et structurée.
 Ne propose jamais de modification sans mentionner qu'elle nécessite une validation humaine.
 Si tu ne trouves pas l'information, dis-le clairement."""
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", SALES_SYSTEM_PROMPT),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}"),
-])
-
-
 def run_sales_agent(question: str, user_id: int = 1) -> dict[str, Any]:
     """Exécute l'agent ventes pour répondre à une question.
 
@@ -71,22 +63,10 @@ def run_sales_agent(question: str, user_id: int = 1) -> dict[str, Any]:
     Returns:
         Dictionnaire avec les clés 'answer', 'agent', 'status'.
     """
-    try:
-        agent = create_tool_calling_agent(llm, SALES_TOOLS, prompt)
-        executor = AgentExecutor(agent=agent, tools=SALES_TOOLS, verbose=False, max_iterations=5)
-        result = executor.invoke({"input": question})
-        answer = result.get("output", "Aucune réponse générée.")
-        return {
-            "answer": answer,
-            "agent": "ventes",
-            "status": "ok",
-            "draft_payload": None,
-        }
-    except Exception as exc:
-        logger.error("Erreur dans l'agent ventes : %s", exc)
-        return {
-            "answer": f"Erreur de l'agent ventes : {exc}",
-            "agent": "ventes",
-            "status": "error",
-            "draft_payload": None,
-        }
+    return run_tool_agent(
+        llm=llm,
+        tools=SALES_TOOLS,
+        system_prompt=SALES_SYSTEM_PROMPT,
+        question=question,
+        agent_name="ventes",
+    )

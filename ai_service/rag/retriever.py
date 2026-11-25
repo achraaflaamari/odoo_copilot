@@ -16,6 +16,11 @@ import os
 from pathlib import Path
 from typing import Any, Callable
 
+from dotenv import load_dotenv
+
+# Charge .env (racine du dépôt ou ai_service/) même en exécution standalone
+load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 # Répertoire de stockage de la base vectorielle

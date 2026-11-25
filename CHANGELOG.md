@@ -2,7 +2,7 @@
 
 Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 
-**Dernière phase : Phase 4 : Interface et sécurité (terminée) — correctif installation RAG**
+**Dernière phase : Phase 5 : Finalisation (terminée)**
 
 ---
 
@@ -27,17 +27,30 @@ Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 ---
 
 ## Phase 5 : Finalisation
-**Statut** : à faire
+**Statut** : terminée — 2026-11-25
 
 ### Tâches réalisées
-- [ ] Documentation complète dans le README
-- [ ] Schéma d'architecture
-- [ ] Guide d'installation
-- [ ] Scénarios de vérification manuelle
-- [ ] Finalisation du CHANGELOG
+- [x] README réécrit et complété : sommaire, présentation, architecture, stack, structure, prérequis, installation pas à pas, utilisation, référence API, validation/journal, sécurité, 13 scénarios, dépannage, limites, perspectives
+- [x] Guide d'installation complet : utilisateur technique Odoo et clé API, installation/mise à jour du module (`-i` / `-u`), configuration `ai.config`
+- [x] Scénarios de vérification renumérotés et complétés (rejet, `/drafts`, RAG, SSE, JSON-RPC)
+- [x] Nouveau `docs/architecture.md` : diagrammes Mermaid (vue d'ensemble, graphe LangGraph, séquences chat et validation, flux RAG), modèle de données, défense en profondeur, variables d'environnement
+- [x] Section Dépannage (triton/CUDA, 403, RAG, module absent, JSON-RPC, brouillons perdus)
+- [x] `rag/retriever.py` : chargement de `.env` en exécution standalone (`index_docs.py`)
+- [x] Migration des agents vers l'API LangChain 1.x (`create_agent`) : `AgentExecutor` n'existe plus dans LangChain 1.x installé ; détection des brouillons via les `ToolMessage`
+- [x] `requirements.txt` borné : `langchain>=1.0,<2.0`, `langchain-groq>=1.0,<2.0`, `langgraph>=1.0,<2.0`
+- [x] Droits `ai.action.log` durcis : les utilisateurs internes lisent et créent le journal, mais ne peuvent plus le modifier (audit intègre)
+- [x] `.gitignore` : `**/rag/chroma_db/` — la base Chroma locale n'est plus proposée à Git
+- [x] Correction du doublon « Scénario 6 » et du comptage des motifs d'injection (15)
+- [x] CHANGELOG finalisé
+
+### Vérifications
+- [x] Compilation Python du microservice (`main.py`, `agents/*.py`, `rag/*.py`)
+- [x] Démarrage FastAPI et endpoint `/health` via `TestClient`
+- [x] Compilation Python et validation XML du module Odoo
+- [x] Test RAG de bout en bout : backend ONNX, indexation et recherche de 2 documents (ChromaDB 1.5.9 / onnxruntime 1.32)
 
 ### Documentation
--
+- [x] README, `docs/architecture.md`, AGENT.md (structure `docs/`) et CHANGELOG à jour
 
 ---
 
@@ -55,7 +68,7 @@ Mis à jour à chaque tâche terminée. Entrée la plus récente en haut.
 - [x] Action client OWL enregistrée dans `views/copilot_chat_views.xml`
 - [x] Menu "Chat IA" ajouté dans les menus Copilot IA
 - [x] Filtrage anti-injection de prompt (`ai_service/tools/prompt_filter.py`) :
-  - 14 patterns regex (FR + EN) couvrant les injections courantes
+  - 15 patterns regex (FR + EN) couvrant les injections courantes
   - Troncature à 2000 caractères, suppression des balises HTML
   - Réponse "bloqué" + journalisation dans `ai.action.log`
 - [x] RAG — Retrieval-Augmented Generation (`ai_service/rag/retriever.py`) :

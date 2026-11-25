@@ -10,11 +10,10 @@ import logging
 import os
 from typing import Any
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain.tools import tool
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 
+from agents.tool_agent import run_tool_agent
 from tools.odoo_client import odoo_client
 
 logger = logging.getLogger(__name__)
@@ -138,13 +137,6 @@ Règles importantes :
   pour préparer un brouillon, puis indique clairement que cela nécessite une validation humaine.
 - Si tu ne trouves pas l'information, dis-le clairement."""
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", PROJECT_SYSTEM_PROMPT),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}"),
-])
-
-
 def run_project_agent(question: str, user_id: int = 1) -> dict[str, Any]:
     """Exécute l'agent projets pour répondre à une question.
 
@@ -155,39 +147,11 @@ def run_project_agent(question: str, user_id: int = 1) -> dict[str, Any]:
     Returns:
         Dictionnaire avec les clés 'answer', 'agent', 'status', 'draft_payload'.
     """
-    try:
-        agent = create_tool_calling_agent(llm, PROJECT_TOOLS, prompt)
-        executor = AgentExecutor(
-            agent=agent,
-            tools=PROJECT_TOOLS,
-            verbose=False,
-            max_iterations=5,
-            return_intermediate_steps=True,
-        )
-        result = executor.invoke({"input": question})
-        answer = result.get("output", "Aucune réponse générée.")
-
-        # Détection d'un brouillon dans les étapes intermédiaires
-        draft_payload: dict | None = None
-        for action, observation in result.get("intermediate_steps", []):
-            if hasattr(action, "tool") and action.tool == "propose_task_tool":
-                try:
-                    draft_payload = json.loads(observation)
-                except (json.JSONDecodeError, TypeError):
-                    pass
-
-        status = "draft" if draft_payload else "ok"
-        return {
-            "answer": answer,
-            "agent": "projets",
-            "status": status,
-            "draft_payload": draft_payload,
-        }
-    except Exception as exc:
-        logger.error("Erreur dans l'agent projets : %s", exc)
-        return {
-            "answer": f"Erreur de l'agent projets : {exc}",
-            "agent": "projets",
-            "status": "error",
-            "draft_payload": None,
-        }
+    return run_tool_agent(
+        llm=llm,
+        tools=PROJECT_TOOLS,
+        system_prompt=PROJECT_SYSTEM_PROMPT,
+        question=question,
+        agent_name="projets",
+        draft_tool_names=("propose_task_tool",),
+    )
